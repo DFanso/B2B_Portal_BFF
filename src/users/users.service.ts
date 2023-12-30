@@ -3,6 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
+import { UserResponseDto } from './dto/user-response.dto';
 
 @Injectable()
 export class UsersService {
@@ -11,15 +12,21 @@ export class UsersService {
     private configService: ConfigService,
   ) {}
 
-  async create(createUserDto: CreateUserDto) {
-    console.log(createUserDto);
+  async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     const externalApiUrl = this.configService.get<string>('USER_MICRO_API');
 
     try {
       const response = await this.httpService
         .post(externalApiUrl, createUserDto)
         .toPromise();
-      return response.data;
+      const userResponse: UserResponseDto = {
+        userId: response.data.userId,
+        name: response.data.name,
+        email: response.data.email,
+        type: response.data.type,
+      };
+
+      return userResponse;
     } catch (error) {
       throw new Error(`Failed to post to external API: ${error.message}`);
     }
