@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { CognitoIdentityProviderClient, ConfirmSignUpCommand, SignUpCommand, InitiateAuthCommand } from '@aws-sdk/client-cognito-identity-provider';
+import {
+  CognitoIdentityProviderClient,
+  ConfirmSignUpCommand,
+  SignUpCommand,
+  InitiateAuthCommand,
+} from '@aws-sdk/client-cognito-identity-provider';
 import { fromEnv } from '@aws-sdk/credential-provider-env';
 import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
@@ -20,9 +25,10 @@ export class CognitoService {
   }
 
   private generateSecretHash(email: string): string {
-    return crypto.createHmac('SHA256', this.clientSecret)
-                 .update(email + this.clientId)
-                 .digest('base64');
+    return crypto
+      .createHmac('SHA256', this.clientSecret)
+      .update(email + this.clientId)
+      .digest('base64');
   }
 
   async registerUser(email: string, password: string): Promise<void> {
@@ -35,8 +41,8 @@ export class CognitoService {
       UserAttributes: [
         {
           Name: 'email',
-          Value: email
-        }
+          Value: email,
+        },
       ],
     };
 
@@ -56,16 +62,16 @@ export class CognitoService {
       ClientId: this.clientId,
       SecretHash: secretHash,
       AuthParameters: {
-        'USERNAME': email,
-        'PASSWORD': password,
-        'SECRET_HASH': secretHash
+        USERNAME: email,
+        PASSWORD: password,
+        SECRET_HASH: secretHash,
       },
     };
 
     try {
       const data = await this.client.send(new InitiateAuthCommand(params));
       console.log('Authentication successful:', data);
-      return data.AuthenticationResult.IdToken; // This should include the JWT token
+      return data.AuthenticationResult.IdToken;
     } catch (err) {
       console.error('Error during authentication:', err);
       throw err;

@@ -1,16 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { CognitoService } from './CognitoService';
 import { AuthGuard } from '@nestjs/passport';
 import { ClsService } from 'nestjs-cls';
-import { AppClsStore } from 'src/Types/user.types';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService,private readonly cognitoService: CognitoService,private readonly clsService: ClsService) {}
-
+  constructor(
+    private readonly authService: AuthService,
+    private readonly cognitoService: CognitoService,
+    private readonly clsService: ClsService,
+  ) {}
 
   @Post('register')
   async register(@Body() body: any) {
@@ -20,7 +31,10 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() body: any) {
-    const token = await this.cognitoService.authenticateUser(body.email, body.password);
+    const token = await this.cognitoService.authenticateUser(
+      body.email,
+      body.password,
+    );
     return { message: 'User login successfully', token };
   }
 

@@ -13,7 +13,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly cls: ClsService,
     private readonly configService: ConfigService,
   ) {
-    const jwksUri = `https://cognito-idp.${configService.get<string>('AWS_REGION')}.amazonaws.com/${configService.get<string>('COGNITO_USER_POOL_ID')}/.well-known/jwks.json`;
+    const jwksUri = `https://cognito-idp.${configService.get<string>(
+      'AWS_REGION',
+    )}.amazonaws.com/${configService.get<string>(
+      'COGNITO_USER_POOL_ID',
+    )}/.well-known/jwks.json`;
     const audience = configService.get<string>('COGNITO_CLIENT_ID');
     const region = configService.get<string>('AWS_REGION');
     const userPoolId = configService.get<string>('COGNITO_USER_POOL_ID');
@@ -26,7 +30,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         const jwks = new jwksRsa.JwksClient({ jwksUri });
 
         const decodedToken = jwt.decode(rawJwtToken, { complete: true });
-        if (!decodedToken || typeof decodedToken === 'string' || !decodedToken.header.kid) {
+        if (
+          !decodedToken ||
+          typeof decodedToken === 'string' ||
+          !decodedToken.header.kid
+        ) {
           throw new UnauthorizedException('Invalid token');
         }
 
@@ -44,7 +52,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any): Promise<any> {
-    console.log(payload)
+    console.log(payload);
     if (!payload) {
       throw new UnauthorizedException('Invalid token');
     }
