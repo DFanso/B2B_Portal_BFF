@@ -1,71 +1,48 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
 import { CognitoService } from './CognitoService';
 import { AuthGuard } from '@nestjs/passport';
 import { ClsService } from 'nestjs-cls';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { ApiTags } from '@nestjs/swagger';
+import { UsersService } from 'src/users/users.service';
 
-@Controller('auth')
+@ApiTags('auth')
+@Controller({ path: 'auth', version: '1' })
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly cognitoService: CognitoService,
     private readonly clsService: ClsService,
+    private readonly usersService: UsersService,
   ) {}
 
   @Post('register')
-  async register(@Body() body: any) {
-    await this.cognitoService.registerUser(body.email, body.password);
-    return { message: 'User registered successfully' };
+  async register(@Body() createUserDto: CreateUserDto) {
+    try {
+      const userId = await this.cognitoService.registerUser(
+        createUserDto.email,
+        createUserDto.password,
+      );
+      createUserDto.userId = userId;
+
+      return this.authService.create(createUserDto);
+    } catch (err) {
+      throw new Error(`Registration failed: ${err.message}`);
+    }
   }
 
   @Post('login')
-  async login(@Body() body: any) {
+  async login(@Body() createUserDto: CreateUserDto) {
     const token = await this.cognitoService.authenticateUser(
-      body.email,
-      body.password,
+      createUserDto.email,
+      createUserDto.password,
     );
     return { message: 'User login successfully', token };
   }
-
   @UseGuards(AuthGuard('jwt'))
   @Get('jwt')
   testJwt() {
     return this.authService.findAll();
-  }
-
-  @Post()
-  create(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.create(createAuthDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.authService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-    return this.authService.update(+id, updateAuthDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id);
   }
 }

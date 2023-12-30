@@ -1,14 +1,18 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { ClsService } from 'nestjs-cls';
 import { AppClsStore } from 'src/Types/user.types';
+import { UsersService } from 'src/users/users.service';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly clsService: ClsService) {}
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+  constructor(
+    private readonly clsService: ClsService,
+    private usersService: UsersService,
+  ) {}
+  create(createUserDto: CreateUserDto) {
+    return this.usersService.create(createUserDto);
   }
 
   findAll() {

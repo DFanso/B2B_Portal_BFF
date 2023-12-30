@@ -14,9 +14,11 @@ export class CognitoService {
   private client: CognitoIdentityProviderClient;
   private clientId: string;
   private clientSecret: string;
+  private userPoolId: string;
 
   constructor(private configService: ConfigService) {
     this.clientId = this.configService.get<string>('COGNITO_CLIENT_ID');
+    this.userPoolId = this.configService.get<string>('COGNITO_USER_POOL_ID');
     this.clientSecret = this.configService.get<string>('COGNITO_CLIENT_SECRET');
     this.client = new CognitoIdentityProviderClient({
       region: this.configService.get<string>('AWS_REGION'),
@@ -31,7 +33,7 @@ export class CognitoService {
       .digest('base64');
   }
 
-  async registerUser(email: string, password: string): Promise<void> {
+  async registerUser(email: string, password: string): Promise<any> {
     const secretHash = this.generateSecretHash(email);
     const params = {
       ClientId: this.clientId,
@@ -49,9 +51,10 @@ export class CognitoService {
     try {
       const data = await this.client.send(new SignUpCommand(params));
       console.log('Registration successful:', data);
+      return data.UserSub;
     } catch (err) {
       console.error('Error during registration:', err);
-      throw err; // or handle it as per your application's error handling strategy
+      throw err;
     }
   }
 
