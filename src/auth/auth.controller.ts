@@ -1,11 +1,34 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, HttpException, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
+import { CognitoService } from './CognitoService';
+import { AuthGuard } from '@nestjs/passport';
+import { ClsService } from 'nestjs-cls';
+import { AppClsStore } from 'src/Types/user.types';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService,private readonly cognitoService: CognitoService,private readonly clsService: ClsService) {}
+
+
+  @Post('register')
+  async register(@Body() body: any) {
+    await this.cognitoService.registerUser(body.email, body.password);
+    return { message: 'User registered successfully' };
+  }
+
+  @Post('login')
+  async login(@Body() body: any) {
+    const token = await this.cognitoService.authenticateUser(body.email, body.password);
+    return { message: 'User login successfully', token };
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('jwt')
+  testJwt() {
+    return this.authService.findAll();
+  }
 
   @Post()
   create(@Body() createAuthDto: CreateAuthDto) {

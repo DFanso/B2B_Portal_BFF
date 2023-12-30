@@ -19,6 +19,7 @@ import { ClsModule } from 'nestjs-cls';
       USER_MICRO_API: Joi.string().required(),
       PRODUCT_MICRO_API: Joi.string().required(),
       ORDER_MICRO_API: Joi.string().required(),
+      COGNITO_USER_POOL_ID: Joi.string().required(),
     }),
   }),
   ClsModule.forRoot({
@@ -30,7 +31,8 @@ import { ClsModule } from 'nestjs-cls';
         res.setHeader('X-Request-ID', requestId);
       },
     },
-  }),AuthModule],
+  }),
+  AuthModule],
   controllers: [AppController],
   providers: [AppService],
 })
