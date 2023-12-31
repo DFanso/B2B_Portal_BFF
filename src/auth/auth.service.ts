@@ -11,6 +11,7 @@ export class AuthService {
     private readonly clsService: ClsService,
     private usersService: UsersService,
   ) {}
+
   create(createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }

@@ -8,6 +8,7 @@ import {
 import { fromEnv } from '@aws-sdk/credential-provider-env';
 import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
+import { VerifyEmailDto } from './dto/verfiy-email.dto';
 
 @Injectable()
 export class CognitoService {
@@ -54,7 +55,7 @@ export class CognitoService {
       return data.UserSub;
     } catch (err) {
       console.error('Error during registration:', err);
-      throw err;
+      throw new Error('Registration failed. Please try again later.');
     }
   }
 
@@ -77,17 +78,17 @@ export class CognitoService {
       return data.AuthenticationResult.IdToken;
     } catch (err) {
       console.error('Error during authentication:', err);
-      throw err;
+      throw new Error('Authentication failed. Please check your credentials.');
     }
   }
 
-  async verifyEmail(email: string, code: string): Promise<void> {
-    const secretHash = this.generateSecretHash(email);
+  async verifyEmail(verifyEmailDto: VerifyEmailDto): Promise<void> {
+    const secretHash = this.generateSecretHash(verifyEmailDto.email);
     const params = {
       ClientId: this.clientId,
-      Username: email,
+      Username: verifyEmailDto.email,
       SecretHash: secretHash,
-      ConfirmationCode: code,
+      ConfirmationCode: verifyEmailDto.confirmationCode,
     };
 
     try {
