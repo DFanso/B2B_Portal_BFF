@@ -23,9 +23,8 @@ import {
 } from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { AppClsStore, UserType } from 'src/Types/user.types';
-import { ConfigService } from '@nestjs/config';
-import { HttpService } from '@nestjs/axios';
 import { Product } from './entities/product.entity';
+import { UsersService } from 'src/users/users.service';
 
 @ApiTags('products')
 @Controller({ path: 'products', version: '1' })
@@ -33,8 +32,7 @@ export class ProductsController {
   constructor(
     private readonly productsService: ProductsService,
     private readonly clsService: ClsService,
-    private readonly configService: ConfigService,
-    private httpService: HttpService,
+    private readonly usersService: UsersService,
   ) {}
 
   @ApiBearerAuth()
@@ -56,16 +54,10 @@ export class ProductsController {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
     createProductDto.supplierId = context.user.id;
-    const USER_MICRO_API = this.configService.get<string>('USER_MICRO_API');
 
     try {
-      const user = await this.httpService
-        .get(`${USER_MICRO_API}/${createProductDto.supplierId}`)
-        .toPromise();
-      if (!user) {
-        throw new HttpException(`User not found`, HttpStatus.NOT_FOUND);
-      }
-      if (user.data.type != UserType.Supplier) {
+      const user = await this.usersService.findOne(createProductDto.supplierId);
+      if (user.type != UserType.Supplier) {
         throw new HttpException('Invalid supplier', HttpStatus.UNAUTHORIZED);
       }
     } catch (error) {

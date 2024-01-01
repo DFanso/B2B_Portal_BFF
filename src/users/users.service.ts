@@ -39,8 +39,30 @@ export class UsersService {
     return `This action returns all users`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string) {
+    const USER_MICRO_API = this.configService.get<string>('USER_MICRO_API');
+
+    try {
+      const user = await this.httpService
+        .get(`${USER_MICRO_API}/${id}`)
+        .toPromise();
+      if (!user) {
+        throw new HttpException(`User not found`, HttpStatus.NOT_FOUND);
+      }
+      const userResponse: UserResponseDto = {
+        userId: user.data.userId,
+        name: user.data.name,
+        email: user.data.email,
+        type: user.data.type,
+      };
+
+      return userResponse;
+    } catch (error) {
+      throw new HttpException(
+        `${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

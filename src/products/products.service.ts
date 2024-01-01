@@ -3,8 +3,6 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { ClsService } from 'nestjs-cls';
-import { Product } from './entities/product.entity';
 
 @Injectable()
 export class ProductsService {
