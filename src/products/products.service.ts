@@ -122,8 +122,40 @@ export class ProductsService {
     }
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(
+    id: number,
+    updateProductDto: UpdateProductDto,
+  ): Promise<ProductResponseDto> {
+    const PRODUCT_MICRO_API =
+      this.configService.get<string>('PRODUCT_MICRO_API');
+    const url = `${PRODUCT_MICRO_API}/${id}`;
+    const headersRequest = {
+      'Content-Type': 'application/json',
+    };
+    try {
+      const response = await this.httpService
+        .put(url, JSON.stringify(updateProductDto), {
+          headers: headersRequest,
+        })
+        .toPromise();
+
+      const productResponse: ProductResponseDto = {
+        productId: response.data.productId,
+        name: response.data.name,
+        description: response.data.description,
+        price: response.data.price,
+        status: response.data.status,
+        supplierId: response.data.supplierId,
+        images: response.data.images,
+      };
+
+      return productResponse;
+    } catch (error) {
+      throw new HttpException(
+        `Failed to update product: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   remove(id: number) {

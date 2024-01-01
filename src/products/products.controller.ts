@@ -99,10 +99,12 @@ export class ProductsController {
     required: true,
     description: 'Product ID',
   })
-  findOne(@Param('id') id: string) {
-    return this.productsService.findOne(+id);
+  findOne(@Param('id') id: number) {
+    return this.productsService.findOne(id);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
   @ApiOperation({ summary: 'Update a product' })
   @ApiResponse({ status: 200, type: ProductResponseDto })
@@ -112,10 +114,33 @@ export class ProductsController {
     required: true,
     description: 'Product ID',
   })
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productsService.update(+id, updateProductDto);
+  async update(
+    @Param('id') id: number,
+    @Body() updateProductDto: UpdateProductDto,
+  ) {
+    const context = this.clsService.get<AppClsStore>();
+    if (!context || !context.user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    const product = await this.productsService.findOne(id);
+    if (!product) {
+      throw new HttpException(`Product Not found`, HttpStatus.NOT_FOUND);
+    }
+    if (product.supplierId != context.user.id) {
+      throw new HttpException(
+        `This product Not owned by this Supplier`,
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
+    updateProductDto.supplierId = context.user.id;
+    updateProductDto.productId = product.productId;
+
+    return this.productsService.update(id, updateProductDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a product' })
   @ApiResponse({ status: 200, description: 'Product successfully deleted' })
