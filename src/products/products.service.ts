@@ -158,7 +158,19 @@ export class ProductsService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: number): Promise<any> {
+    const PRODUCT_MICRO_API =
+      this.configService.get<string>('PRODUCT_MICRO_API');
+    const url = `${PRODUCT_MICRO_API}/${id}`;
+
+    try {
+      const response = await this.httpService.delete(url).toPromise();
+      return response.data;
+    } catch (error) {
+      throw new HttpException(
+        `Failed to delete product: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

@@ -150,7 +150,21 @@ export class ProductsController {
     required: true,
     description: 'Product ID',
   })
-  remove(@Param('id') id: string) {
-    return this.productsService.remove(+id);
+  async remove(@Param('id') id: number) {
+    const context = this.clsService.get<AppClsStore>();
+    if (!context || !context.user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    const product = await this.productsService.findOne(id);
+    if (!product) {
+      throw new HttpException(`Product Not found`, HttpStatus.NOT_FOUND);
+    }
+    if (product.supplierId != context.user.id) {
+      throw new HttpException(
+        `This product Not owned by this Supplier`,
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+    return this.productsService.remove(id);
   }
 }
