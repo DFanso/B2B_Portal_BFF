@@ -18,6 +18,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiOperation,
+  ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -25,6 +26,7 @@ import { ClsService } from 'nestjs-cls';
 import { AppClsStore, UserType } from 'src/Types/user.types';
 import { Product } from './entities/product.entity';
 import { UsersService } from 'src/users/users.service';
+import { ProductResponseDto } from './dto/product-response.dto';
 
 @ApiTags('products')
 @Controller({ path: 'products', version: '1' })
@@ -61,31 +63,54 @@ export class ProductsController {
         throw new HttpException('Invalid supplier', HttpStatus.UNAUTHORIZED);
       }
     } catch (error) {
-      throw new HttpException(
-        `${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException(`${error.message}`, HttpStatus.NOT_FOUND);
     }
 
     return this.productsService.create(createProductDto);
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all products' })
+  @ApiResponse({ status: 200, type: [ProductResponseDto] })
   findAll() {
     return this.productsService.findAll();
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get a product by id' })
+  @ApiResponse({ status: 200, type: ProductResponseDto })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    required: true,
+    description: 'Product ID',
+  })
   findOne(@Param('id') id: string) {
     return this.productsService.findOne(+id);
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update a product' })
+  @ApiResponse({ status: 200, type: ProductResponseDto })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    required: true,
+    description: 'Product ID',
+  })
   update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     return this.productsService.update(+id, updateProductDto);
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete a product' })
+  @ApiResponse({ status: 200, description: 'Product successfully deleted' })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    required: true,
+    description: 'Product ID',
+  })
   remove(@Param('id') id: string) {
     return this.productsService.remove(+id);
   }
