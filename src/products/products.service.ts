@@ -60,6 +60,36 @@ export class ProductsService {
     }
   }
 
+  async findBySupplier(id: string): Promise<ProductResponseDto[]> {
+    const PRODUCT_MICRO_API =
+      this.configService.get<string>('PRODUCT_MICRO_API');
+
+    try {
+      const response = await this.httpService
+        .get(`${PRODUCT_MICRO_API}/supplier/${id}`)
+        .toPromise();
+
+      if (!response.data) {
+        throw new HttpException('No products found', HttpStatus.NOT_FOUND);
+      }
+
+      return response.data.map((product) => ({
+        productId: product.productId,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        status: product.status,
+        supplierId: product.supplierId,
+        images: product.images,
+      }));
+    } catch (error) {
+      throw new HttpException(
+        `Failed to retrieve products: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   async findOne(id: number): Promise<ProductResponseDto> {
     const PRODUCT_MICRO_API =
       this.configService.get<string>('PRODUCT_MICRO_API');

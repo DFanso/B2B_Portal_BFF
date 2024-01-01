@@ -69,6 +69,20 @@ export class ProductsController {
     return this.productsService.create(createProductDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/supplier')
+  @ApiOperation({ summary: 'Get a products by supplier' })
+  @ApiResponse({ status: 200, type: ProductResponseDto })
+  findBySupplier() {
+    const context = this.clsService.get<AppClsStore>();
+    if (!context || !context.user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    return this.productsService.findBySupplier(context.user.id);
+  }
+
   @Get()
   @ApiOperation({ summary: 'Get all products' })
   @ApiResponse({ status: 200, type: [ProductResponseDto] })
