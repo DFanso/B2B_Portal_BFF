@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ClsService } from 'nestjs-cls';
@@ -12,6 +12,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly cls: ClsService,
     private readonly configService: ConfigService,
+    private readonly logger: Logger,
   ) {
     const jwksUri = `https://cognito-idp.${configService.get<string>(
       'AWS_REGION',
@@ -52,7 +53,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any): Promise<any> {
-    console.log(payload);
+    this.logger.verbose(payload);
     if (!payload) {
       throw new UnauthorizedException('Invalid token');
     }
