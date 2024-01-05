@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
+import { UpdateOrderDto } from './dto/update-order.dto';
 
 @Injectable()
 export class OrdersService {
@@ -27,19 +27,115 @@ export class OrdersService {
     }
   }
 
-  findAll() {
-    return `This action returns all orders`;
+  async findAll() {
+    const ORDER_MICRO_API = this.configService.get<string>('ORDER_MICRO_API');
+
+    try {
+      const response = await this.httpService.get(ORDER_MICRO_API).toPromise();
+      console.log(response);
+      return response.data;
+    } catch (error) {
+      throw new HttpException(
+        `Failed to Get orders: ${error.message}`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
+  async findOne(id: number) {
+    const ORDER_MICRO_API = this.configService.get<string>('ORDER_MICRO_API');
+
+    try {
+      const response = await this.httpService
+        .get(`${ORDER_MICRO_API}/${id}`)
+        .toPromise();
+      console.log(response);
+      return response.data;
+    } catch (error) {
+      throw new HttpException(
+        `Failed to Get order: ${error.message}`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
   }
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
+  async findByCustomerId(customerId: string): Promise<any> {
+    const ORDER_MICRO_API = this.configService.get<string>('ORDER_MICRO_API');
+
+    try {
+      const response = await this.httpService
+        .get(`${ORDER_MICRO_API}/customer/${customerId}`)
+        .toPromise();
+      return response.data;
+    } catch (error) {
+      throw new HttpException(
+        `Failed to get orders for customer: ${error.message}`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} order`;
+  async findBySupplierId(supplierId: string): Promise<any> {
+    const ORDER_MICRO_API = this.configService.get<string>('ORDER_MICRO_API');
+
+    try {
+      const response = await this.httpService
+        .get(`${ORDER_MICRO_API}/supplier/${supplierId}`)
+        .toPromise();
+      return response.data;
+    } catch (error) {
+      throw new HttpException(
+        `Failed to get orders for supplier: ${error.message}`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+  }
+
+  async updateStatus(id: string, newStatus: string): Promise<any> {
+    const ORDER_MICRO_API = this.configService.get<string>('ORDER_MICRO_API');
+
+    try {
+      const response = await this.httpService
+        .put(`${ORDER_MICRO_API}/${id}/status`, { newStatus })
+        .toPromise();
+      return response.data;
+    } catch (error) {
+      throw new HttpException(
+        `Failed to update order status: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async updateOrder(id: string, updateOrderDto: UpdateOrderDto): Promise<any> {
+    const ORDER_MICRO_API = this.configService.get<string>('ORDER_MICRO_API');
+
+    try {
+      const response = await this.httpService
+        .put(`${ORDER_MICRO_API}/${id}`, updateOrderDto)
+        .toPromise();
+      return response.data;
+    } catch (error) {
+      throw new HttpException(
+        `Failed to update order: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async remove(id: number): Promise<any> {
+    const ORDER_MICRO_API = this.configService.get<string>('ORDER_MICRO_API');
+
+    try {
+      const response = await this.httpService
+        .delete(`${ORDER_MICRO_API}/${id}`)
+        .toPromise();
+      return response.data;
+    } catch (error) {
+      throw new HttpException(
+        `Failed to delete order: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
