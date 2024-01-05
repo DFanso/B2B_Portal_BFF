@@ -6,6 +6,7 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
+import { ProductStatus } from 'src/Types/product.types';
 
 export class CreateProductDto {
   @IsNumber()
@@ -37,11 +38,12 @@ export class CreateProductDto {
   price: number;
 
   @ApiProperty({
+    enum: ProductStatus,
     description: 'Status of the product',
     example: 'Available',
   })
   @IsString()
-  status: string;
+  status: ProductStatus;
 
   @IsString()
   supplierId: string;
