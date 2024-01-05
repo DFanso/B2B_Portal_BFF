@@ -7,9 +7,8 @@ import { OrderStatus } from 'src/Types/order.types';
 export class CreateOrderDto {
   orderId?: number;
 
-  @ApiProperty({ example: 456 })
   @IsNotEmpty({ message: 'Customer ID is mandatory' })
-  customerId: number;
+  customerId: string;
 
   @ApiProperty({ type: [OrderItemDTO] })
   @IsNotEmpty({ message: 'Order items cannot be empty' })

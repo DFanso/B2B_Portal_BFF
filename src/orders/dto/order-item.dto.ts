@@ -18,7 +18,7 @@ export class OrderItemDTO {
   price: number;
 
   @IsNotEmpty({ message: 'Supplier ID is mandatory' })
-  supplierId: number;
+  supplierId: string;
 
   @IsString({ message: 'Supplier Name is mandatory' })
   supplierName: string;
