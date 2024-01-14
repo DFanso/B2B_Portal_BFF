@@ -49,8 +49,10 @@ export class AuthController {
         createUserDto.password,
       );
       createUserDto.userId = userId;
+      console.log(createUserDto);
+      const user = this.authService.create(createUserDto);
 
-      return this.authService.create(createUserDto);
+      return user;
     } catch (err) {
       throw new HttpException(`${err.message}`, HttpStatus.BAD_REQUEST);
     }
