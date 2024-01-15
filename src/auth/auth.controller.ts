@@ -82,8 +82,9 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Bad Request' })
   async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
     try {
+      console.log(verifyEmailDto);
       await this.cognitoService.verifyEmail(verifyEmailDto);
-      return { message: 'Email verified successfully' };
+      return { statusCode: 200, message: 'Email verified successfully' };
     } catch (error) {
       throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
     }
