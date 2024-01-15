@@ -85,7 +85,7 @@ export class AuthController {
       await this.cognitoService.verifyEmail(verifyEmailDto);
       return { message: 'Email verified successfully' };
     } catch (error) {
-      throw new HttpException('Verification failed', HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
     }
   }
 
