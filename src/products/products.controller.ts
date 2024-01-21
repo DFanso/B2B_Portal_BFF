@@ -27,6 +27,7 @@ import { AppClsStore, UserType } from 'src/Types/user.types';
 import { Product } from './entities/product.entity';
 import { UsersService } from 'src/users/users.service';
 import { ProductResponseDto } from './dto/product-response.dto';
+import { UpdateProductStatusDto } from './dto/update-status.dto';
 
 @ApiTags('products')
 @Controller({ path: 'products', version: '1' })
@@ -101,6 +102,43 @@ export class ProductsController {
   })
   findOne(@Param('id') id: number) {
     return this.productsService.findOne(id);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Patch(':id/status')
+  @ApiOperation({ summary: 'Update the status of a product' })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    required: true,
+    description: 'Product ID',
+  })
+  @ApiBody({
+    type: UpdateProductStatusDto,
+    description: 'The new status of the product',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Product status updated successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Product not found' })
+  async updateStatus(
+    @Param('id') id: number,
+    @Body() updateProductStatusDto: UpdateProductStatusDto,
+  ) {
+    const context = this.clsService.get<AppClsStore>();
+    if (!context || !context.user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    const product = await this.productsService.findOne(id);
+    if (!product) {
+      throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
+    }
+
+    return this.productsService.updateStatus(id, updateProductStatusDto);
   }
 
   @ApiBearerAuth()
