@@ -92,11 +92,11 @@ export class AuthController {
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
-  @ApiOperation({ summary: 'Test JWT Token' })
+  @ApiOperation({ summary: 'User Profile' })
   @ApiResponse({ status: 200, description: 'JWT Token is valid' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @Get('jwt')
+  @Get('profile')
   testJwt() {
-    return this.authService.findAll();
+    return this.authService.profile();
   }
 }
