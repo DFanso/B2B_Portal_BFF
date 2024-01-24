@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import {
   CognitoIdentityProviderClient,
   ConfirmSignUpCommand,
@@ -55,7 +55,16 @@ export class CognitoService {
       return data.UserSub;
     } catch (err) {
       console.error('Error during registration:', err);
-      throw new Error('Registration failed. Please try again later.');
+      if (err.name === 'UsernameExistsException') {
+        throw new HttpException(
+          `An account with the given email already exists.`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      throw new HttpException(
+        'Registration failed. Please try again later.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -78,11 +87,26 @@ export class CognitoService {
       return data.AuthenticationResult.IdToken;
     } catch (err) {
       console.error('Error during authentication:', err);
-      throw new Error('Authentication failed. Please check your credentials.');
+      if (err.name === 'NotAuthorizedException') {
+        throw new HttpException(
+          `Incorrect username or password.`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      if (err.name === 'UserNotConfirmedException') {
+        throw new HttpException(
+          `User is not Verified.`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      throw new HttpException(
+        'Registration failed. Please try again later.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
-  async verifyEmail(verifyEmailDto: VerifyEmailDto): Promise<void> {
+  async verifyEmail(verifyEmailDto: VerifyEmailDto): Promise<any> {
     const secretHash = this.generateSecretHash(verifyEmailDto.email);
     const params = {
       ClientId: this.clientId,
@@ -94,9 +118,21 @@ export class CognitoService {
     try {
       const data = await this.client.send(new ConfirmSignUpCommand(params));
       console.log('Email verification successful:', data);
+      return data;
     } catch (err) {
       console.error('Error during email verification:', err);
-      throw err;
+      if (err.name === 'CodeMismatchException') {
+        throw new HttpException(
+          `Invalid verification code provided, please try again.`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      if (err.name === 'ExpiredCodeException') {
+        throw new HttpException(
+          `Invalid verification code provided, please try again.`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
     }
   }
 }

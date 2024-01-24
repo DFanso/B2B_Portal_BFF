@@ -49,8 +49,10 @@ export class AuthController {
         createUserDto.password,
       );
       createUserDto.userId = userId;
+      console.log(createUserDto);
+      const user = this.authService.create(createUserDto);
 
-      return this.authService.create(createUserDto);
+      return user;
     } catch (err) {
       throw new HttpException(`${err.message}`, HttpStatus.BAD_REQUEST);
     }
@@ -80,20 +82,21 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Bad Request' })
   async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
     try {
+      console.log(verifyEmailDto);
       await this.cognitoService.verifyEmail(verifyEmailDto);
-      return { message: 'Email verified successfully' };
+      return { statusCode: 200, message: 'Email verified successfully' };
     } catch (error) {
-      throw new HttpException('Verification failed', HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
     }
   }
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
-  @ApiOperation({ summary: 'Test JWT Token' })
+  @ApiOperation({ summary: 'User Profile' })
   @ApiResponse({ status: 200, description: 'JWT Token is valid' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @Get('jwt')
+  @Get('profile')
   testJwt() {
-    return this.authService.findAll();
+    return this.authService.profile();
   }
 }

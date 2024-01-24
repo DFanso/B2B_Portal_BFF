@@ -15,6 +15,13 @@ export class AuthService {
   create(createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
+  profile() {
+    const context = this.clsService.get<AppClsStore>();
+    if (!context || !context.user) {
+      throw new HttpException('User not found', HttpStatus.BAD_REQUEST);
+    }
+    return this.usersService.findOne(context.user.id);
+  }
 
   findAll() {
     const context = this.clsService.get<AppClsStore>();

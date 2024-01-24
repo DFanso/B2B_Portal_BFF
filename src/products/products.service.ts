@@ -4,6 +4,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { ProductResponseDto } from './dto/product-response.dto';
+import { UpdateProductStatusDto } from './dto/update-status.dto';
 
 @Injectable()
 export class ProductsService {
@@ -118,6 +119,44 @@ export class ProductsService {
       throw new HttpException(
         `Failed to find product: ${error.message}`,
         HttpStatus.NOT_FOUND,
+      );
+    }
+  }
+  async updateStatus(
+    id: number,
+    updateProductStatusDto: UpdateProductStatusDto,
+  ): Promise<ProductResponseDto> {
+    const PRODUCT_MICRO_API =
+      this.configService.get<string>('PRODUCT_MICRO_API');
+    const url = `${PRODUCT_MICRO_API}/${id}`;
+    const headersRequest = {
+      'Content-Type': 'application/json',
+    };
+
+    console.log(updateProductStatusDto.status)
+
+    try {
+      const response = await this.httpService
+        .patch(url, JSON.stringify(updateProductStatusDto.status), {
+          headers: headersRequest,
+        })
+        .toPromise();
+
+      const productResponse: ProductResponseDto = {
+        productId: response.data.productId,
+        name: response.data.name,
+        description: response.data.description,
+        price: response.data.price,
+        status: response.data.status,
+        supplierId: response.data.supplierId,
+        images: response.data.images,
+      };
+
+      return productResponse;
+    } catch (error) {
+      throw new HttpException(
+        `Failed to update product status: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
